@@ -393,8 +393,9 @@ export async function exportEmbedAssetsAsync(
       bundleType: 'todo',
     });
 
+    const entryModule = convertEntryPointToRelative(projectRoot, entryFile, null);
     const dependencies = await server._bundler.getDependencies(
-      [convertEntryPointToRelative(projectRoot, entryFile)],
+      [entryModule],
       transformOptions,
       resolverOptions,
       { onProgress, shallow: false, lazy: false }

@@ -182,7 +182,7 @@ function toPosixPath(filePath) {
  * This is useful on Android where the entry point is an absolute path.
  * @deprecated
  */
-function convertEntryPointToRelative(projectRoot, absolutePath) {
+function convertEntryPointToRelative(projectRoot, absolutePath, extname = '.js') {
   if (!_path().default.isAbsolute(absolutePath)) {
     absolutePath = _path().default.resolve(process.cwd(), projectRoot, absolutePath);
   }
@@ -201,9 +201,12 @@ function convertEntryPointToRelative(projectRoot, absolutePath) {
   }
   let entry = toPosixPath(_path().default.relative(serverRoot, absolutePath));
 
-  // Strip file extension, if it's trivially resolvable
-  if (entry.endsWith('.js')) {
-    entry = entry.slice(0, -3);
+  // Strip file extension if set and if it's trivially resolvable
+  if (extname?.[0] !== '.') {
+    extname = `.${extname}`;
+  }
+  if (extname != null && entry.endsWith(extname)) {
+    entry = entry.slice(0, -extname.length);
   }
   return entry;
 }
