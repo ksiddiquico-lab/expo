@@ -1,4 +1,299 @@
+---Got it — only coding, no explanations 👇
+
+
 ---
+
+📁 App.tsx
+
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from './screens/HomeScreen';
+import DiscoverScreen from './screens/DiscoverScreen';
+import UploadScreen from './screens/UploadScreen';
+import ActivityScreen from './screens/ActivityScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import ChatScreen from './screens/ChatScreen';
+import LiveScreen from './screens/LiveScreen';
+import { Ionicons } from '@expo/vector-icons';
+
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: { backgroundColor: '#000' },
+          tabBarActiveTintColor: '#7c3aed',
+        }}
+      >
+        <Tab.Screen name="Home" component={HomeScreen}
+          options={{ tabBarIcon: ({color}) => <Ionicons name="home" size={24} color={color}/> }}
+        />
+        <Tab.Screen name="Discover" component={DiscoverScreen}
+          options={{ tabBarIcon: ({color}) => <Ionicons name="search" size={24} color={color}/> }}
+        />
+        <Tab.Screen name="Upload" component={UploadScreen}
+          options={{ tabBarIcon: () => <Ionicons name="add-circle" size={40} color="#7c3aed"/> }}
+        />
+        <Tab.Screen name="Live" component={LiveScreen}
+          options={{ tabBarIcon: ({color}) => <Ionicons name="videocam" size={24} color={color}/> }}
+        />
+        <Tab.Screen name="Chat" component={ChatScreen}
+          options={{ tabBarIcon: ({color}) => <Ionicons name="chatbubble" size={24} color={color}/> }}
+        />
+        <Tab.Screen name="Activity" component={ActivityScreen}
+          options={{ tabBarIcon: ({color}) => <Ionicons name="heart" size={24} color={color}/> }}
+        />
+        <Tab.Screen name="Profile" component={ProfileScreen}
+          options={{ tabBarIcon: ({color}) => <Ionicons name="person" size={24} color={color}/> }}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
+
+---
+
+📁 screens/HomeScreen.tsx
+
+import React from 'react';
+import { View, FlatList, Dimensions } from 'react-native';
+import VideoItem from '../components/VideoItem';
+
+const { height } = Dimensions.get('window');
+
+const videos = [
+  { id: '1', uri: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+  { id: '2', uri: 'https://www.w3schools.com/html/movie.mp4' },
+];
+
+export default function HomeScreen() {
+  return (
+    <FlatList
+      data={videos}
+      pagingEnabled
+      renderItem={({ item }) => (
+        <View style={{ height }}>
+          <VideoItem video={item.uri} />
+        </View>
+      )}
+      keyExtractor={(item) => item.id}
+    />
+  );
+}
+
+
+---
+
+📁 components/VideoItem.tsx
+
+import React, { useRef, useState } from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Video } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
+
+export default function VideoItem({ video }) {
+  const ref = useRef(null);
+  const [liked, setLiked] = useState(false);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={() => ref.current.pauseAsync()}
+      onLongPress={() => ref.current.playAsync()}
+    >
+      <Video
+        ref={ref}
+        source={{ uri: video }}
+        style={styles.video}
+        resizeMode="cover"
+        shouldPlay
+        isLooping
+      />
+
+      <TouchableOpacity
+        style={styles.likeBtn}
+        onPress={() => setLiked(!liked)}
+      >
+        <Ionicons name="heart" size={40} color={liked ? 'red' : 'white'} />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  video: { width: '100%', height: '100%' },
+  likeBtn: {
+    position: 'absolute',
+    right: 20,
+    bottom: 100,
+  },
+});
+
+
+---
+
+📁 screens/UploadScreen.tsx
+
+import React, { useRef, useState } from 'react';
+import { View, Button } from 'react-native';
+import { Camera } from 'expo-camera';
+
+export default function UploadScreen() {
+  const [permission, requestPermission] = Camera.useCameraPermissions();
+  const cameraRef = useRef(null);
+
+  if (!permission) return <View />;
+  if (!permission.granted) {
+    return <Button title="Allow Camera" onPress={requestPermission} />;
+  }
+
+  return (
+    <Camera style={{ flex: 1 }} ref={cameraRef}>
+      <Button title="Record" onPress={() => console.log("Recording")} />
+    </Camera>
+  );
+}
+
+
+---
+
+📁 screens/DiscoverScreen.tsx
+
+import React from 'react';
+import { View, TextInput, FlatList } from 'react-native';
+
+export default function DiscoverScreen() {
+  return (
+    <View style={{ flex: 1, backgroundColor: '#000', padding: 10 }}>
+      <TextInput
+        placeholder="Search..."
+        placeholderTextColor="#aaa"
+        style={{
+          backgroundColor: '#111',
+          color: '#fff',
+          padding: 10,
+          borderRadius: 10
+        }}
+      />
+
+      <FlatList
+        data={[1,2,3,4]}
+        numColumns={2}
+        renderItem={() => (
+          <View style={{ flex: 1, margin: 5, height: 150, backgroundColor: '#222' }} />
+        )}
+      />
+    </View>
+  );
+}
+
+
+---
+
+📁 screens/ChatScreen.tsx
+
+import React, { useState, useCallback } from 'react';
+import { GiftedChat } from 'react-native-gifted-chat';
+
+export default function ChatScreen() {
+  const [messages, setMessages] = useState([]);
+
+  const onSend = useCallback((newMessages = []) => {
+    setMessages(previous => GiftedChat.append(previous, newMessages));
+  }, []);
+
+  return (
+    <GiftedChat
+      messages={messages}
+      onSend={messages => onSend(messages)}
+      user={{ _id: 1 }}
+    />
+  );
+}
+
+
+---
+
+📁 screens/LiveScreen.tsx
+
+import React from 'react';
+import AgoraUIKit from 'agora-rn-uikit';
+
+export default function LiveScreen() {
+  const connectionData = {
+    appId: "YOUR_AGORA_APP_ID",
+    channel: "worldbook-live",
+  };
+
+  return <AgoraUIKit connectionData={connectionData} />;
+}
+
+
+---
+
+📁 screens/ActivityScreen.tsx
+
+import React from 'react';
+import { View, Text } from 'react-native';
+
+export default function ActivityScreen() {
+  return (
+    <View style={{ flex:1, backgroundColor:'#000', justifyContent:'center', alignItems:'center' }}>
+      <Text style={{ color:'#fff' }}>Notifications</Text>
+    </View>
+  );
+}
+
+
+---
+
+📁 screens/ProfileScreen.tsx
+
+import React from 'react';
+import { View, Text } from 'react-native';
+
+export default function ProfileScreen() {
+  return (
+    <View style={{ flex:1, backgroundColor:'#000', alignItems:'center', justifyContent:'center' }}>
+      <Text style={{ color:'#fff', fontSize:20 }}>WORLDBOOK Profile</Text>
+    </View>
+  );
+}
+
+
+---
+
+📁 app.json
+
+{
+  "expo": {
+    "name": "WORLDBOOK",
+    "slug": "worldbook",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["android", "ios", "web"]
+  }
+}
+
+
+---
+
+📦 Install packages
+
+npm install expo-av expo-camera
+npm install @react-navigation/native @react-navigation/bottom-tabs
+npm install react-native-gifted-chat
+npm install agora-rn-uikit
+
+
+---
+
+🔥 Done.
 title: Introduction to development builds
 sidebar_title: Introduction
 description: Why use development builds and how to get started.
